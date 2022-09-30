@@ -1,87 +1,122 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * Generated with the TypeScript template
- * https://github.com/react-native-community/react-native-template-typescript
- *
- * @format
- */
-
-import React, {type PropsWithChildren} from 'react';
+import React, {useEffect, useState, type PropsWithChildren} from 'react';
 import {
-  SafeAreaView,
+  Image,
+  PermissionsAndroid,
   ScrollView,
-  StatusBar,
   StyleSheet,
   Text,
-  useColorScheme,
+  TouchableOpacity,
   View,
 } from 'react-native';
-
-import {
-  Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
-
-
-const Section: React.FC<
-  PropsWithChildren<{
-    title: string;
-  }>
-> = ({children, title}) => {
-  const isDarkMode = useColorScheme() === 'dark';
-  return (
-    <View style={styles.sectionContainer}>
-      {/* <RNCamera 
-      type={RNCamera.Constants.Type.back}
-      flashMode={RNCamera.Constants.FlashMode.on} */}
-      {/* /> */}
-    </View>
-  );
-};
+import { RNCamera } from 'react-native-camera'
 
 const App = () => {
-  const isDarkMode = useColorScheme() === 'dark';
+  const [camera, setCamera] = useState<any>();
+  const [imagePath, setImagePath] = useState<string>('');
 
-  const backgroundStyle = {
-    backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
+  const takePicture = async () => {
+    if (camera) {
+      const options = { quality: 0.5, base64: true };
+      const data = await camera.takePictureAsync(options);
+      console.log(data.uri);
+      setImagePath(data.uri)
+    }
   };
 
+  const requestCameraPermission = async () => {
+    try {
+      const granted = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.CAMERA,
+        {
+          title: "Cool Photo App Camera Permission",
+          message:
+            "Cool Photo App needs access to your camera " +
+            "so you can take awesome pictures.",
+          buttonNeutral: "Ask Me Later",
+          buttonNegative: "Cancel",
+          buttonPositive: "OK"
+        }
+      );
+      // if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+      //   console.log("You can use the camera");
+      // } else {
+      //   console.log("Camera permission denied");
+      // }
+    } catch (err) {
+      console.warn(err);
+    }
+  };
+  
+  useEffect(() => {
+    requestCameraPermission()
+  }, [])
+
   return (
-    <SafeAreaView style={backgroundStyle}>
-      <StatusBar
-        barStyle={isDarkMode ? 'light-content' : 'dark-content'}
-        backgroundColor={backgroundStyle.backgroundColor}
-      />
-      <ScrollView
-        contentInsetAdjustmentBehavior="automatic"
-        style={backgroundStyle}>
-        <Header />
+      <ScrollView style={{backgroundColor: 'white'}}>
+        <RNCamera
+          ref={ref => {
+            setCamera(ref)
+          }}
+          style={styles.preview}
+          type={RNCamera.Constants.Type.back}
+          flashMode={RNCamera.Constants.FlashMode.off}
+          androidCameraPermissionOptions={{
+            title: 'Permission to use camera',
+            message: 'We need your permission to use your camera',
+            buttonPositive: 'Ok',
+            buttonNegative: 'Cancel',
+          }}
+          androidRecordAudioPermissionOptions={{
+            title: 'Permission to use audio recording',
+            message: 'We need your permission to use your audio',
+            buttonPositive: 'Ok',
+            buttonNegative: 'Cancel',
+          }}
+          // onGoogleVisionBarcodesDetected={({ barcodes }) => {
+          //   console.log(barcodes);
+          // }}
+          barCodeTypes={[RNCamera.Constants.BarCodeType.qr]}
+          onBarCodeRead={(result: any) => {
+            console.log(result)
+          }}
+        />
+        <View style={{ flex: 1, flexDirection: 'row', justifyContent: 'center' }}>
+          <TouchableOpacity
+            onPress={takePicture}
+            style={styles.capture}
+          >
+            <Text style={{ fontSize: 14, color: 'red' }}> SNAP </Text>
+          </TouchableOpacity>
+        </View>
+        {imagePath.length > 0
+          && <>
+            <Image source={{uri: imagePath}} style={{width: 300, height: 300}} />
+          </>
+        }
       </ScrollView>
-    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
+  container: {
+    flex: 1,
+    flexDirection: 'column',
+    backgroundColor: 'black',
   },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
+  preview: {
+    flex: 1,
+    height: 700,
+    justifyContent: 'flex-end',
+    alignItems: 'center',
   },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
-  },
-  highlight: {
-    fontWeight: '700',
+  capture: {
+    flex: 0,
+    backgroundColor: '#fff',
+    borderRadius: 5,
+    padding: 15,
+    paddingHorizontal: 20,
+    alignSelf: 'center',
+    margin: 20,
   },
 });
 
