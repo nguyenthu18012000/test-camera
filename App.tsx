@@ -8,7 +8,8 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { RNCamera } from 'react-native-camera'
+import { RNCamera } from 'react-native-camera';
+import BarcodeMask from 'react-native-barcode-mask';
 
 const App = () => {
   const [camera, setCamera] = useState<any>();
@@ -60,26 +61,26 @@ const App = () => {
           style={styles.preview}
           type={RNCamera.Constants.Type.back}
           flashMode={RNCamera.Constants.FlashMode.off}
+          autoFocus={RNCamera.Constants.AutoFocus.on}
           androidCameraPermissionOptions={{
             title: 'Permission to use camera',
             message: 'We need your permission to use your camera',
             buttonPositive: 'Ok',
             buttonNegative: 'Cancel',
           }}
-          androidRecordAudioPermissionOptions={{
-            title: 'Permission to use audio recording',
-            message: 'We need your permission to use your audio',
-            buttonPositive: 'Ok',
-            buttonNegative: 'Cancel',
-          }}
           // onGoogleVisionBarcodesDetected={({ barcodes }) => {
           //   console.log(barcodes);
           // }}
-          barCodeTypes={[RNCamera.Constants.BarCodeType.qr]}
+          // barCodeTypes={[RNCamera.Constants.BarCodeType.qr]}
           onBarCodeRead={(result: any) => {
             console.log(result)
           }}
-        />
+          // onTextRecognized={(text: any) => {
+          //   console.log(text)
+          // }}
+        >
+          <BarcodeMask />
+        </RNCamera>
         <View style={{ flex: 1, flexDirection: 'row', justifyContent: 'center' }}>
           <TouchableOpacity
             onPress={takePicture}
